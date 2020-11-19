@@ -1,50 +1,28 @@
 const mongoose = require('mongoose')
-const validator = require('validator')
 
 mongoose.connect('mongodb://127.0.0.1:27017/task-manager-api', {
   useNewUrlParser: true,
-  useCreateIndex: true
+  useCreateIndex: true,
+  useFindAndModify: false //Overcome the deprecation warnings
 })
 
-//Creating a mongoose model
-const User = mongoose.model('User', {
-  name: {
-    type: String,
-    required: true, //To make this compulsary
-    trim: true
-  },
-  password: {
-    type: String,
-    required: true,
-    minlength: 7,
-    trim: true,
-    validate(value) {
-      if (value.toLowerCase().includes('password')) {
-        throw new Error('Password cannot contain "password"')
-      }
-    }
-  },
-  email: {
-    type: String,
-    required: true,
-    trim: true,
-    lowercase: true,
-    validate(value) {
-      if (!validator.isEmail(value)) {
-        throw new Error('Email is invalid')
-      }
-    }
-  },
-  age: {
-    type: Number,
-    default: 0,
-    validate(value) {
-      if (value < 0) {
-        throw new Error('Age must be a positive number')
-      }
-    }
-  }
-})
+
+
+
+
+
+
+//Instances
+
+// const task = new Task({
+//   description: 'Eat dinner'
+// })
+
+// task.save().then(() => {
+//   console.log(task)
+// }).catch((error) => {
+//   console.log(error)
+// })
 
 
 // const me = new User({
@@ -59,26 +37,3 @@ const User = mongoose.model('User', {
 // }).catch((error) => {
 //   console.log('Error!', error)
 // })
-
-
-const Task = mongoose.model('Task', {
-  description: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  completed: {
-    type: Boolean,
-    default: false
-  }
-})
-
-const task = new Task({
-  description: 'Eat dinner'
-})
-
-task.save().then(() => {
-  console.log(task)
-}).catch((error) => {
-  console.log(error)
-})

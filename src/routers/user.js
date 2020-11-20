@@ -59,6 +59,7 @@ router.patch('/users/:id', async (req, res) => {
   const updates = Object.keys(req.body)
   //What user allowed to update
   const allowedUpdates = ['name', 'email', 'password', 'age']
+  
   //Using every
   //every -> It will give true if all the things are valid otherwise false
   const isValidOperation = updates.every((update) => allowedUpdates.includes(update))
@@ -67,7 +68,11 @@ router.patch('/users/:id', async (req, res) => {
   }
 
   try {
-    const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
+    const user = await User.findById(req.params.id)
+    updates.forEach((update) => user[update] = req.body[update])
+    await user.save()
+
+    // const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
     if (!user) {
       return res.status(404).send()
     }

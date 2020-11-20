@@ -1,10 +1,8 @@
 const mongoose = require('mongoose')
 const validator = require('validator')
+const bcrypt = require('bcryptjs')
 
-
-
-//Creating a mongoose model
-const User = mongoose.model('User', {
+const userSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true, //To make this compulsary
@@ -42,6 +40,23 @@ const User = mongoose.model('User', {
     }
   }
 })
+
+//Setting the middleware
+//pre -> before save  post -> After  asve
+userSchema.pre('save', async function (next) {
+  const user = this
+
+  if (user.isModified('password')) {
+    user.password = await bcrypt.hash(user.password, 8)
+  }
+
+  // To know that function is over
+  // This will trigger the process is finish
+  next()
+})
+
+//Creating a mongoose model
+const User = mongoose.model('User', userSchema)
 
 
 module.exports = User

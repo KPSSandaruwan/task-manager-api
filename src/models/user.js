@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 const validator = require('validator')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
+const Task = require('./task')
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -49,6 +50,29 @@ const userSchema = new mongoose.Schema({
   }]
 })
 
+
+//This is just a relationship between two fields
+//It's not stored in the database
+userSchema.virtual('tasks', {
+  ref: 'Task',
+  localField: '_id',
+  foreignField: 'owner'
+}) 
+
+
+//Special about "toJSON" method
+//Then we can manipulate the object that comes out from this
+userSchema.methods.toJSON = function () {
+  const user = this
+
+  //Getting raw profile data
+  const userObject = user.toObject()
+  
+  delete userObject.password
+  delete userObject.tokens
+  return userObject
+}
+
 //Defining Token genetarate function
 //methods are accessable on instances and called instance method
 //We use function because we have to use 'this' binding
@@ -89,6 +113,13 @@ userSchema.pre('save', async function (next) {
 
   // To know that function is over
   // This will trigger the process is finish
+  next()
+})
+
+//Delete user tasks when user is deleted
+userSchema.pre('remove', async function (next) {
+  const user = this
+  await Task.deleteMany({ owner: user._id })
   next()
 })
 

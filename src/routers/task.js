@@ -20,10 +20,39 @@ router.post('/tasks', auth, async (req, res) => {
   }
 })
 
+// URL structure
+// GET/tasks?completed=true
+// GET/tasks?limit=10&skip=20
+// GET/tasks?sortBy=createdAt:asc(ascending)ordesc
 router.get('/tasks', auth, async (req, res) => {
+  const match = {}
+  const sort = {}
+
+  if (req.query.completed) {
+    match.completed = req.query.completed === 'true'
+    // We have to do this because we are try store string value to boolean
+  }
+
+  if (req.query.sortBy) {
+    const parts = req.query.sortBy.split(':')
+    sort[parts[0]] = parts[1] === 'desc' ? -1 : 1
+  }
+
   try {
     // const tasks = await Task.find({ owner: req.user._id })
-    await req.user.populate('tasks').execPopulate()
+    await req.user.populate({
+      //Filtering Data
+      path: 'tasks',
+      match,
+      options: {
+        //GET /tasks?limit=10&skip=20
+        //limit => How much results should show for a one page
+        //skip => change the pages
+        limit: parseInt(req.query.limit),
+        skip: parseInt(req.query.skip),
+        sort
+      }
+    }).execPopulate()
     res.send(req.user.tasks)
   } catch (e) {
     res.status(500).send()
